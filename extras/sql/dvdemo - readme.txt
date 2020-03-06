@@ -1,6 +1,7 @@
 The Cloud Pak for Data data virtualization scenario is based on a simple database schema of a "stock trading" application. The schema contains the following tables:
 - ACCOUNTS: Each customer may have a trading account with a specific balance.
-- CUSTOMERS: Contains master data about each customer in JSON format.
+- CUSTOMERS: Contains master data about each customer.
+- CUSTOMERS_JSON: Contains master data about each customer in JSON format.
 - STOCK_HISTORY: Contains for each stock symbol and each trading day the corresponding high, low, open, close and transaction volume.
 - STOCK_SYMBOLS: Contains for each stock symbol the name of the corresponding company.
 - STOCK_TRANSACTIONS: Contains information about stock transactions of all customers.
