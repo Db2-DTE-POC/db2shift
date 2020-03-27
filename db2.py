@@ -14,8 +14,6 @@ import ibm_db
 import pandas
 import ibm_db_dbi
 import json
-import matplotlib
-import matplotlib.pyplot as plt
 import getpass
 import os
 import pickle
@@ -229,15 +227,6 @@ def sqlhelp():
            {sd}json{ed1}{sd}Retrieve the result set as a JSON record{ed2}
          {er} 
          {sr}
-           {sd}pb, bar{ed1}{sd}Plot the results as a bar chart{ed2}
-         {er}
-         {sr}
-           {sd}pl, line{ed1}{sd}Plot the results as a line chart{ed2}
-         {er}
-         {sr}
-           {sd}pp, pie{ed1}{sd}Plot Pie: Plot the results as a pie chart{ed2}
-         {er}        
-         {sr}
            {sd}q, quiet{ed1}{sd}Quiet results - no answer set or messages returned from the function{ed2}
          {er}
          {sr}  
@@ -269,12 +258,8 @@ e, echo    Echo the SQL command that was generated after substitution
 h, help    Display %sql help information
 j          Create a pretty JSON representation. Only the first column is formatted 
 json       Retrieve the result set as a JSON record 
-pb, bar    Plot the results as a bar chart 
-pl, line   Plot the results as a line chart 
-pp, pie    Plot Pie: Plot the results as a pie chart 
 q, quiet   Quiet results - no answer set or messages returned from the function 
 r, array   Return the result set as an array of values 
-sampledata Create and load the EMPLOYEE and DEPARTMENT tables 
 t,time     Time the SQL statement and return the execution count per second
 grid       Display the results in a scrollable grid 
        """        
@@ -1470,106 +1455,6 @@ def addquotes(inString,flag_quotes):
     else:
         return("'"+serialized.replace("'","''")+"'")    # Convert single quotes to two single quotes
 
-def db2_create_sample(quiet):
-    
-    create_department = """
-      BEGIN
-        DECLARE FOUND INTEGER; 
-        SET FOUND = (SELECT COUNT(*) FROM SYSIBM.SYSTABLES WHERE NAME='DEPARTMENT' AND CREATOR=CURRENT USER); 
-        IF FOUND = 0 THEN 
-           EXECUTE IMMEDIATE('CREATE TABLE DEPARTMENT(DEPTNO CHAR(3) NOT NULL, DEPTNAME VARCHAR(36) NOT NULL, 
-                              MGRNO CHAR(6),ADMRDEPT CHAR(3) NOT NULL)'); 
-           EXECUTE IMMEDIATE('INSERT INTO DEPARTMENT VALUES 
-             (''A00'',''SPIFFY COMPUTER SERVICE DIV.'',''000010'',''A00''), 
-             (''B01'',''PLANNING'',''000020'',''A00''), 
-             (''C01'',''INFORMATION CENTER'',''000030'',''A00''), 
-             (''D01'',''DEVELOPMENT CENTER'',NULL,''A00''), 
-             (''D11'',''MANUFACTURING SYSTEMS'',''000060'',''D01''), 
-             (''D21'',''ADMINISTRATION SYSTEMS'',''000070'',''D01''), 
-             (''E01'',''SUPPORT SERVICES'',''000050'',''A00''), 
-             (''E11'',''OPERATIONS'',''000090'',''E01''), 
-             (''E21'',''SOFTWARE SUPPORT'',''000100'',''E01''), 
-             (''F22'',''BRANCH OFFICE F2'',NULL,''E01''), 
-             (''G22'',''BRANCH OFFICE G2'',NULL,''E01''), 
-             (''H22'',''BRANCH OFFICE H2'',NULL,''E01''), 
-             (''I22'',''BRANCH OFFICE I2'',NULL,''E01''), 
-             (''J22'',''BRANCH OFFICE J2'',NULL,''E01'')');      
-           END IF;
-      END"""
-  
-    %sql -d -q {create_department} 
-    
-    create_employee = """
-     BEGIN
-        DECLARE FOUND INTEGER; 
-        SET FOUND = (SELECT COUNT(*) FROM SYSIBM.SYSTABLES WHERE NAME='EMPLOYEE' AND CREATOR=CURRENT USER); 
-        IF FOUND = 0 THEN 
-          EXECUTE IMMEDIATE('CREATE TABLE EMPLOYEE(
-                             EMPNO CHAR(6) NOT NULL,
-                             FIRSTNME VARCHAR(12) NOT NULL,
-                             MIDINIT CHAR(1),
-                             LASTNAME VARCHAR(15) NOT NULL,
-                             WORKDEPT CHAR(3),
-                             PHONENO CHAR(4),
-                             HIREDATE DATE,
-                             JOB CHAR(8),
-                             EDLEVEL SMALLINT NOT NULL,
-                             SEX CHAR(1),
-                             BIRTHDATE DATE,
-                             SALARY DECIMAL(9,2),
-                             BONUS DECIMAL(9,2),
-                             COMM DECIMAL(9,2)
-                             )');
-          EXECUTE IMMEDIATE('INSERT INTO EMPLOYEE VALUES
-             (''000010'',''CHRISTINE'',''I'',''HAAS''      ,''A00'',''3978'',''1995-01-01'',''PRES    '',18,''F'',''1963-08-24'',152750.00,1000.00,4220.00),
-             (''000020'',''MICHAEL''  ,''L'',''THOMPSON''  ,''B01'',''3476'',''2003-10-10'',''MANAGER '',18,''M'',''1978-02-02'',94250.00,800.00,3300.00),
-             (''000030'',''SALLY''    ,''A'',''KWAN''      ,''C01'',''4738'',''2005-04-05'',''MANAGER '',20,''F'',''1971-05-11'',98250.00,800.00,3060.00),
-             (''000050'',''JOHN''     ,''B'',''GEYER''     ,''E01'',''6789'',''1979-08-17'',''MANAGER '',16,''M'',''1955-09-15'',80175.00,800.00,3214.00),
-             (''000060'',''IRVING''   ,''F'',''STERN''     ,''D11'',''6423'',''2003-09-14'',''MANAGER '',16,''M'',''1975-07-07'',72250.00,500.00,2580.00),
-             (''000070'',''EVA''      ,''D'',''PULASKI''   ,''D21'',''7831'',''2005-09-30'',''MANAGER '',16,''F'',''2003-05-26'',96170.00,700.00,2893.00),
-             (''000090'',''EILEEN''   ,''W'',''HENDERSON'' ,''E11'',''5498'',''2000-08-15'',''MANAGER '',16,''F'',''1971-05-15'',89750.00,600.00,2380.00),
-             (''000100'',''THEODORE'' ,''Q'',''SPENSER''   ,''E21'',''0972'',''2000-06-19'',''MANAGER '',14,''M'',''1980-12-18'',86150.00,500.00,2092.00),
-             (''000110'',''VINCENZO'' ,''G'',''LUCCHESSI'' ,''A00'',''3490'',''1988-05-16'',''SALESREP'',19,''M'',''1959-11-05'',66500.00,900.00,3720.00),
-             (''000120'',''SEAN''     ,'' '',''O`CONNELL'' ,''A00'',''2167'',''1993-12-05'',''CLERK   '',14,''M'',''1972-10-18'',49250.00,600.00,2340.00),
-             (''000130'',''DELORES''  ,''M'',''QUINTANA''  ,''C01'',''4578'',''2001-07-28'',''ANALYST '',16,''F'',''1955-09-15'',73800.00,500.00,1904.00),
-             (''000140'',''HEATHER''  ,''A'',''NICHOLLS''  ,''C01'',''1793'',''2006-12-15'',''ANALYST '',18,''F'',''1976-01-19'',68420.00,600.00,2274.00),
-             (''000150'',''BRUCE''    ,'' '',''ADAMSON''   ,''D11'',''4510'',''2002-02-12'',''DESIGNER'',16,''M'',''1977-05-17'',55280.00,500.00,2022.00),
-             (''000160'',''ELIZABETH'',''R'',''PIANKA''    ,''D11'',''3782'',''2006-10-11'',''DESIGNER'',17,''F'',''1980-04-12'',62250.00,400.00,1780.00),
-             (''000170'',''MASATOSHI'',''J'',''YOSHIMURA'' ,''D11'',''2890'',''1999-09-15'',''DESIGNER'',16,''M'',''1981-01-05'',44680.00,500.00,1974.00),
-             (''000180'',''MARILYN''  ,''S'',''SCOUTTEN''  ,''D11'',''1682'',''2003-07-07'',''DESIGNER'',17,''F'',''1979-02-21'',51340.00,500.00,1707.00),
-             (''000190'',''JAMES''    ,''H'',''WALKER''    ,''D11'',''2986'',''2004-07-26'',''DESIGNER'',16,''M'',''1982-06-25'',50450.00,400.00,1636.00),
-             (''000200'',''DAVID''    ,'' '',''BROWN''     ,''D11'',''4501'',''2002-03-03'',''DESIGNER'',16,''M'',''1971-05-29'',57740.00,600.00,2217.00),
-             (''000210'',''WILLIAM''  ,''T'',''JONES''     ,''D11'',''0942'',''1998-04-11'',''DESIGNER'',17,''M'',''2003-02-23'',68270.00,400.00,1462.00),
-             (''000220'',''JENNIFER'' ,''K'',''LUTZ''      ,''D11'',''0672'',''1998-08-29'',''DESIGNER'',18,''F'',''1978-03-19'',49840.00,600.00,2387.00),
-             (''000230'',''JAMES''    ,''J'',''JEFFERSON'' ,''D21'',''2094'',''1996-11-21'',''CLERK   '',14,''M'',''1980-05-30'',42180.00,400.00,1774.00),
-             (''000240'',''SALVATORE'',''M'',''MARINO''    ,''D21'',''3780'',''2004-12-05'',''CLERK   '',17,''M'',''2002-03-31'',48760.00,600.00,2301.00),
-             (''000250'',''DANIEL''   ,''S'',''SMITH''     ,''D21'',''0961'',''1999-10-30'',''CLERK   '',15,''M'',''1969-11-12'',49180.00,400.00,1534.00),
-             (''000260'',''SYBIL''    ,''P'',''JOHNSON''   ,''D21'',''8953'',''2005-09-11'',''CLERK   '',16,''F'',''1976-10-05'',47250.00,300.00,1380.00),
-             (''000270'',''MARIA''    ,''L'',''PEREZ''     ,''D21'',''9001'',''2006-09-30'',''CLERK   '',15,''F'',''2003-05-26'',37380.00,500.00,2190.00),
-             (''000280'',''ETHEL''    ,''R'',''SCHNEIDER'' ,''E11'',''8997'',''1997-03-24'',''OPERATOR'',17,''F'',''1976-03-28'',36250.00,500.00,2100.00),
-             (''000290'',''JOHN''     ,''R'',''PARKER''    ,''E11'',''4502'',''2006-05-30'',''OPERATOR'',12,''M'',''1985-07-09'',35340.00,300.00,1227.00),
-             (''000300'',''PHILIP''   ,''X'',''SMITH''     ,''E11'',''2095'',''2002-06-19'',''OPERATOR'',14,''M'',''1976-10-27'',37750.00,400.00,1420.00),
-             (''000310'',''MAUDE''    ,''F'',''SETRIGHT''  ,''E11'',''3332'',''1994-09-12'',''OPERATOR'',12,''F'',''1961-04-21'',35900.00,300.00,1272.00),
-             (''000320'',''RAMLAL''   ,''V'',''MEHTA''     ,''E21'',''9990'',''1995-07-07'',''FIELDREP'',16,''M'',''1962-08-11'',39950.00,400.00,1596.00),
-             (''000330'',''WING''     ,'' '',''LEE''       ,''E21'',''2103'',''2006-02-23'',''FIELDREP'',14,''M'',''1971-07-18'',45370.00,500.00,2030.00),
-             (''000340'',''JASON''    ,''R'',''GOUNOT''    ,''E21'',''5698'',''1977-05-05'',''FIELDREP'',16,''M'',''1956-05-17'',43840.00,500.00,1907.00),
-             (''200010'',''DIAN''     ,''J'',''HEMMINGER'' ,''A00'',''3978'',''1995-01-01'',''SALESREP'',18,''F'',''1973-08-14'',46500.00,1000.00,4220.00),
-             (''200120'',''GREG''     ,'' '',''ORLANDO''   ,''A00'',''2167'',''2002-05-05'',''CLERK   '',14,''M'',''1972-10-18'',39250.00,600.00,2340.00),
-             (''200140'',''KIM''      ,''N'',''NATZ''      ,''C01'',''1793'',''2006-12-15'',''ANALYST '',18,''F'',''1976-01-19'',68420.00,600.00,2274.00),
-             (''200170'',''KIYOSHI''  ,'' '',''YAMAMOTO''  ,''D11'',''2890'',''2005-09-15'',''DESIGNER'',16,''M'',''1981-01-05'',64680.00,500.00,1974.00),
-             (''200220'',''REBA''     ,''K'',''JOHN''      ,''D11'',''0672'',''2005-08-29'',''DESIGNER'',18,''F'',''1978-03-19'',69840.00,600.00,2387.00),
-             (''200240'',''ROBERT''   ,''M'',''MONTEVERDE'',''D21'',''3780'',''2004-12-05'',''CLERK   '',17,''M'',''1984-03-31'',37760.00,600.00,2301.00),
-             (''200280'',''EILEEN''   ,''R'',''SCHWARTZ''  ,''E11'',''8997'',''1997-03-24'',''OPERATOR'',17,''F'',''1966-03-28'',46250.00,500.00,2100.00),
-             (''200310'',''MICHELLE'' ,''F'',''SPRINGER''  ,''E11'',''3332'',''1994-09-12'',''OPERATOR'',12,''F'',''1961-04-21'',35900.00,300.00,1272.00),
-             (''200330'',''HELENA''   ,'' '',''WONG''      ,''E21'',''2103'',''2006-02-23'',''FIELDREP'',14,''F'',''1971-07-18'',35370.00,500.00,2030.00),
-             (''200340'',''ROY''      ,''R'',''ALONZO''    ,''E21'',''5698'',''1997-07-05'',''FIELDREP'',16,''M'',''1956-05-17'',31840.00,500.00,1907.00)');                             
-        END IF;
-     END"""
-    
-    %sql -d -q {create_employee}    
-    
-    if (quiet == False): success("Sample tables [EMPLOYEE, DEPARTMENT] created.")
-
 def checkOption(args_in, option, vFalse=False, vTrue=True):
     
     args_out = args_in.strip()
@@ -1583,96 +1468,6 @@ def checkOption(args_in, option, vFalse=False, vTrue=True):
 
     return args_out, found
 
-def plotData(hdbi, sql):
-    
-    try:
-        df = pandas.read_sql(sql,hdbi)
-          
-    except Exception as err:
-        db2_error(False)
-        return
-                
-        
-    if df.empty:
-        errormsg("No results returned")
-        return
-    
-    col_count = len(df.columns)
-
-    if flag(["-pb","-bar"]):                                    # Plot 1 = bar chart
-    
-        if (col_count in (1,2,3)):
-            
-            if (col_count == 1):
- 
-                df.index = df.index + 1
-                _ = df.plot(kind='bar');
-                _ = plt.plot();
-                
-            elif (col_count == 2):
- 
-                xlabel = df.columns.values[0]
-                ylabel = df.columns.values[1]
-                df.plot(kind='bar',x=xlabel,y=ylabel);
-                _ = plt.plot();
-                
-            else:
- 
-                values = df.columns.values[2]
-                columns = df.columns.values[0]
-                index = df.columns.values[1]
-                pivoted = pandas.pivot_table(df, values=values, columns=columns, index=index) 
-                _ = pivoted.plot.bar(); 
-            
-        else:
-            errormsg("Can't determine what columns to plot")
-            return
-                    
-    elif flag(["-pp","-pie"]):                                  # Plot 2 = pie chart
-        
-        if (col_count in (1,2)):  
-                
-            if (col_count == 1):
-                df.index = df.index + 1
-                yname = df.columns.values[0]
-                _ = df.plot(kind='pie',y=yname);                
-            else:          
-                xlabel = df.columns.values[0]
-                xname = df[xlabel].tolist()
-                yname = df.columns.values[1]
-                _ = df.plot(kind='pie',y=yname,labels=xname);
-                
-            plt.show();
-            
-        else:
-            errormsg("Can't determine what columns to plot")
-            return
-                    
-    elif flag(["-pl","-line"]):                                  # Plot 3 = line chart
-            
-        if (col_count in (1,2,3)): 
-            
-            if (col_count == 1):
-                df.index = df.index + 1  
-                _ = df.plot(kind='line');          
-            elif (col_count == 2):            
-                xlabel = df.columns.values[0]
-                ylabel = df.columns.values[1]
-                _ = df.plot(kind='line',x=xlabel,y=ylabel) ; 
-            else:         
-                values = df.columns.values[2]
-                columns = df.columns.values[0]
-                index = df.columns.values[1]
-                pivoted = pandas.pivot_table(df, values=values, columns=columns, index=index)
-                _ = pivoted.plot();
-                
-            plt.show();
-                
-        else:
-            errormsg("Can't determine what columns to plot")
-            return
-    else:
-        return
 
 def findProc(procname):
     
@@ -2358,11 +2153,6 @@ class DB2(Magics):
                 cnt = sqlTimer(_hdbc, _settings["runtime"], sql)            # Given the sql and parameters, clock the time
                 if (cnt >= 0): print("Total iterations in %s second(s): %s" % (_settings["runtime"],cnt))                
                 return(cnt)
-            
-            elif flag(["-pb","-bar","-pp","-pie","-pl","-line"]):                       # We are plotting some results 
-                
-                plotData(_hdbi, sql)                            # Plot the data and return
-                return
  
             else:
         
